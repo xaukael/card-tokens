@@ -1,2 +1,2 @@
 # card-tokens
-Drag cards from stacks to the canvas
+Drag cards to the canvas
