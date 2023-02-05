@@ -1,0 +1,33 @@
+
+{
+  "id": "card-tokens",
+  "name": "card-tokens",
+  "title": "Card Tokens",
+  "description": "Drop cards onto the canvas as tokens",
+  "authors": [{"name":"Xaukael"}],
+  "version": "0.1.0",
+	"socket": true,
+  "compatibility": {
+      "minimum": "10",
+      "verified": "10"
+    },
+	"socket": true,
+  "scripts": ["card-tokens.js"],
+    "relationships": {
+        "requires": [
+            {
+                "id": "warpgate",
+                "type": "module",
+                "manifest": "https://github.com/trioderegion/warpgate/releases/latest/download/module.json",
+                "compatibility": {
+                    "minimum": "1.12.1",
+                    "verified": "1.15.x",
+                    "maximum": "2"
+                }
+            }
+        ]
+    },
+  "url": "https://github.com/xaukael/card-tokens/",
+  "manifest": "https://github.com/xaukael/dcard-tokens/raw/main/module.json",
+  "download": "https://github.com/xaukael/card-tokens/raw/main/card-tokens.zip"
+}
