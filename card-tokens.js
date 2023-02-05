@@ -2,7 +2,6 @@
 var createCardToken = async function(data, userId) {
   let card = fromUuidSync(data.uuid);
   let src = data.src;
-  console.log(src)
   let actor = game.actors.find(a=>a.flags.world?.card==card.uuid);
   if (actor) {
     let scene = game.scenes.get(data.scene)
@@ -12,7 +11,6 @@ var createCardToken = async function(data, userId) {
     return; 
   }
   Hooks.once('createActor', async (actor)=>{
-    console.log('spawning new actor', actor.id)
     let scene = game.scenes.get(data.scene)
     if (scene.tokens.find(t=>t.actor?.flags?.world?.card==data.uuid)) return ui.notifications.warn('Card already on canvas');
     warpgate.spawnAt(data, await actor.getTokenDocument(), {token:{texture:{src}}})
@@ -27,7 +25,6 @@ Hooks.once("socketlib.ready", () => {
 Hooks.on('dropCanvasData', async (canvas, data)=>{
   if (data.type != "Card") return;
   let card = fromUuidSync(data.uuid);
-  console.log(data)
   data.shiftKey = event.shiftKey;
   data.scene = canvas.scene.id;
   let $span = game.cards.filter(c=>c.type=="pile").reduce((span, pile)=>{
@@ -45,14 +42,12 @@ Hooks.on('dropCanvasData', async (canvas, data)=>{
     let face = $(this).data().face=="back"?null:Number($(this).data().face);
     data.src = $(this).find('img').attr('src');
     if (card.parent.id==$(this).data().id) {
-      console.log( face )
       await card.update({face});
       $(this).closest('.placeable-hud').remove();
       return window.socket.executeAsGM("createCardToken", data, game.user.id);
     }
     data.pile = $(this).data().id;
     let pile = game.cards.get(data.pile);
-    console.log(card.parent, pile, face )
     let newCards = await card.parent.pass(pile, [card.id],{updateData: {face}});
     data.uuid = newCards[0].uuid;
     $(this).closest('.placeable-hud').remove();
@@ -126,13 +121,12 @@ Hooks.on('createCard', async (card, options, user)=>{
 
 Hooks.on('updateCard', async (card, update, options, user)=>{
   if (!game.user.isGM) return;
-  if (!update.hasOwnProperty('face')) return console.log(update);
+  if (!update.hasOwnProperty('face')) return;
   let actor = game.actors.find(a=>a.flags.world?.card==card.uuid);
   if (!actor) return;
   let tokens = actor.getActiveTokens();
   let src = card.faces[update.face]?.img || card.back.img;
-  console.log(src, actor, tokens )
-  console.log(await Promise.all(tokens.map(async t=> { return await t.scene.updateEmbeddedDocuments("Token", [{_id: t.document.id, texture:{src}}])})))
+  await Promise.all(tokens.map(async t=> { return await t.scene.updateEmbeddedDocuments("Token", [{_id: t.document.id, texture:{src}}])}))
 })
 
 Hooks.on('deleteCard', async (card, options, user)=>{
@@ -140,9 +134,8 @@ Hooks.on('deleteCard', async (card, options, user)=>{
   await Actor.deleteDocuments(game.actors.filter(a=>a.flags.world?.card==card.uuid).map(c=>c._id))
   let folder = game.folders.find(f=>f.name==card.parent.name&&f.type=="Actor");
   let actors = game.actors.filter(a=>a.folder?.id==folder?.id);
-  console.log(actors)
   if (actors.length) return;
-  await Folder.deleteDocuments([folder.id])
+  await Folder.deleteDocuments([folder.id]);
 })
 
 var createFolderDebounce = foundry.utils.debounce((data)=> { Folder.create(data) }, 500);
