@@ -22,7 +22,7 @@ Hooks.on('preCreateToken', (token)=>{
   let scenes = game.scenes.filter(m=>m.tokens.filter(i=>i.actor?.id==token.actor.id).length);
   if (!scenes.length) {
     let card = fromUuidSync(token.actor.flags.world?.card)
-    let src = card.face?card.faces[card.face].img:card.back.img;
+    let src = card.face!=null?card.faces[card.face].img:card.back.img;
     token.data.update({texture:{src}});
     return true;
   }
@@ -43,15 +43,15 @@ Hooks.on('dropCanvasData', async (canvas, data)=>{
   let $span = game.cards.filter(c=>c.type=="pile").reduce((span, pile)=>{
     span.append(`<h1 style="color:white">${pile.name}</h1>`)
     let div = $(`<div class="flexrow" style="justify-content:center; "></div>`)
-    div.append($(`<span class="control-icon" data-id="${pile.id}" data-face="back" style="margin:.2em; width:${canvas.grid.size}px; flex: 0 0 ${canvas.grid.size*.75}px;" title="Face Down"><center>
+    div.append($(`<span class="control-icon face" data-id="${pile.id}" data-face="back" style="margin:.2em; width:${canvas.grid.size}px; flex: 0 0 ${canvas.grid.size*.75}px;" title="Face Down"><center>
     <img style="padding:0.1em; width:${card.width*canvas.grid.size/4}px; height:${card.height*canvas.grid.size/4}px;" src="${card.back.img}"></center></span>`))
     for (let face of card.faces) 
-    div.append($(`<span class="control-icon" data-id="${pile.id}" data-face="${card.faces.indexOf(face)}" style="margin:.2em; width:${canvas.grid.size}px; flex: 0 0 ${canvas.grid.size*.75}px;" title="${face.name}"><center>
+    div.append($(`<span class="control-icon face" data-id="${pile.id}" data-face="${card.faces.indexOf(face)}" style="margin:.2em; width:${canvas.grid.size}px; flex: 0 0 ${canvas.grid.size*.75}px;" title="${face.name}"><center>
       <img style="padding:0.1em; width:${card.width*canvas.grid.size/4}px; height:${card.height*canvas.grid.size/4}px;" src="${face.img}"></center></span>`))
     span.append(div)
     return span;
   }, $(`<span class="placeable-hud" style="position:absolute; transform: translate(-50%, -50%); left:${data.x}px; top: ${data.y}px; pointer-events: all; width:max-content; border: 1px solid var(--color-border-dark);border-radius: 5px; background-image: url(../ui/denim075.png); padding: 8px;"></span>`))
-  $span.find('.control-icon').click(async function(){
+  $span.find('.control-icon.face').click(async function(){
     let face = $(this).data().face=="back"?null:Number($(this).data().face);
     data.src = $(this).find('img').attr('src');
     if (card.parent.id==$(this).data().id) {
@@ -77,17 +77,17 @@ Hooks.on('renderTokenHUD', (app, html, hudData)=>{
   if (!actor.flags.world?.card) return;
   let card = fromUuidSync(actor.flags.world?.card);
   if (!card) return;
-  html.find('.control-icon').remove();
+  //html.find('.control-icon').remove();
   html.find('.attribute.bar1').addClass('flexrow').css({'justify-content': 'center', 'top': '1em'})
   if (card.back.img!=app.object.document.texture.src)
-  html.find('.attribute.bar1').append($(`<div class="control-icon" style="margin:.2em; width:${app.object.w*2}px; flex: 0 0 ${app.object.w/2}px;" title="back"><center>
+  html.find('.attribute.bar1').append($(`<div class="control-icon face" style="margin:.2em; width:${app.object.w*2}px; flex: 0 0 ${app.object.w/2}px;" title="back"><center>
   <img style="padding:0.1em; width:${card.width*canvas.grid.size/4}px; height:${card.height*canvas.grid.size/4}px;" src="${card.back.img}"></center></div>`)
   .click(function(){ card.update({face:null}) }))
   for (let face of card.faces) {
     if (face.img!=app.object.document.texture.src)
-    html.find('.attribute.bar1').append($(`<div class="control-icon" data-face="${card.faces.indexOf(face)}" style="margin:.2em; width:${app.object.w*2}px; flex: 0 0 ${app.object.w/2}px;" title="${face.name}"><center>
+    html.find('.attribute.bar1').append($(`<div class="control-icon face" data-face="${card.faces.indexOf(face)}" style="margin:.2em; width:${app.object.w*2}px; flex: 0 0 ${app.object.w/2}px;" title="${face.name}"><center>
     <img style="padding:0.1em; width:${card.width*canvas.grid.size/4}px; height:${card.height*canvas.grid.size/4}px;" src="${face.img}"></center></div>`)
-    .click(function(){ card.update({face:Number($(this).data().face)}) }))
+    .click(function(){console.log(Number($(this).data().face)); card.update({face:Number($(this).data().face)}) }))
   }
   /*
   let $pass = $(`<div class="control-icon pass" title="pass"><i class="fas fa-share-square"></i></div>`).click(async function(){   
