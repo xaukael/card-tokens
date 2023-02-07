@@ -5,7 +5,7 @@
   "title": "Card Tokens",
   "description": "Drop cards onto the canvas as tokens",
   "authors": [{"name":"Xaukael"}],
-  "version": "0.2.0",
+  "version": "0.3.0",
 	"socket": true,
   "compatibility": {
       "minimum": "10",
@@ -24,6 +24,11 @@
                     "verified": "1.15.x",
                     "maximum": "2"
                 }
+            },
+						{
+                "id": "socketlib",
+                "type": "module",
+                "manifest": "https://raw.githubusercontent.com/manuelVo/foundryvtt-socketlib/master/module.json"
             }
         ]
     },

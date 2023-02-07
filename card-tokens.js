@@ -4,15 +4,22 @@ var createCardToken = async function(data, userId) {
   let src = data.src;
   let actor = game.actors.find(a=>a.flags.world?.card==card.uuid);
   if (actor) return warpgate.spawnAt(data, await actor.getTokenDocument(), {token:{texture:{src}, rotation:data.rotation}});
-  Hooks.once('createActor', async (actor)=>{ warpgate.spawnAt(data, await actor.getTokenDocument(), {token:{texture:{src}, rotation:data.rotation}}) })
+  let drawing = canvas.scene.drawings.find(d=>d.text==card.parent.name)
+  if (drawing) data = {...data, ...drawing.object.center}
+  Hooks.once('createActor', async (actor)=>{ 
+    warpgate.spawnAt(data, await actor.getTokenDocument(), {token:{texture:{src}, rotation:data.rotation}}, {}, {collision:!!drawing}) 
+  })
 }
 
 Hooks.on('canvasReady', (canvas)=>{
   canvas._onMouseWheel = function(event) {
     if ( event.altKey) {
-      canvas.stage.rotation = event.delta < 0 ? canvas.stage.rotation + Math.toRadians(event.shiftKey?15:45) : canvas.stage.rotation - Math.toRadians(event.shiftKey?15:45);
-      canvas.hud.align()
-      Hooks.call('canvasPan', canvas, {}) 
+      let degrees = 5;
+      if (event.ctrlKey) degrees = 15;
+      if (event.shiftKey) degrees = 45;
+      canvas.stage.rotation = event.delta < 0 ? canvas.stage.rotation + Math.toRadians(degrees) : canvas.stage.rotation - Math.toRadians(degrees);
+      canvas.hud.align();
+      Hooks.call('canvasPan', canvas, {});
       return;
     }
     let dz = ( event.delta < 0 ) ? 1.05 : 0.95;
@@ -25,7 +32,7 @@ Hooks.on('canvasReady', (canvas)=>{
     const scale = canvas.stage.scale.x;
     hud.style.left = `${x}px`;
     hud.style.top = `${y}px`;
-    hud.style.transform = `scale(${scale}) rotate(${Math.toDegrees(canvas.stage.rotation)}deg)`;
+    hud.style.transform = `scale(${scale}) rotate(${Math.ceil(Math.toDegrees(canvas.stage.rotation)/5)*5}deg)`;
   }
 });
 
@@ -58,11 +65,11 @@ Hooks.on('dropCanvasData', async (canvas, data)=>{
   let {x, y} = rotate(0, 0, data.x, data.y, canvas.stage.rotation);
   data.x = x;
   data.y = y;
-  data.rotation = Math.toDegrees(canvas.stage.rotation);
+  data.rotation = Math.toDegrees(canvas.stage.rotation)*-1;
   if (data.type != "Card") return;
   let card = fromUuidSync(data.uuid);
-  data.scene = canvas.scene.id;
-
+  //data.scene = canvas.scene.id;
+  console.log(data)
   Hooks.once('renderDialog', (app, html, dialogOptions)=>{
     html.find('.dialog-buttons').append($(`<button class="do-not-pass"><i class="fa-solid fa-caret-down"></i> Do Not Pass</button>`).click( async function(){
       let face = html.find('input[name="down"]').is(':checked')?null:card.face;
@@ -100,15 +107,7 @@ Hooks.on('deleteActor', async (actor)=>{
   if (!warpgate.util.isFirstGM()) return;
   if (!actor.flags.world?.card) return;
   await Promise.all(game.scenes.map(s=>{return s.deleteEmbeddedDocuments("Token", s.tokens.filter(i=>i.actor?.id==actor.id).map(t=>t._id))}))
-})
-
-Hooks.on('canvasPan', (canvas, data)=>{
-  let transform = $('#hud')[0].style.transform.split(' rotate(');
-  if (transform.length>1) transform.pop();
-  transform[0].replace(' rotate(', '');
-  transform.push(` rotate(${Math.toDegrees(canvas.stage.rotation)}deg)`);
-  $('#hud').css('transform', transform.join(' '));
-})
+});
 
 Hooks.on('createCard', async (card, options, user)=>{
   if (!warpgate.util.isFirstGM()) return;
@@ -116,7 +115,7 @@ Hooks.on('createCard', async (card, options, user)=>{
   let folder = game.folders.find(f=>f.name==card.parent.name&&f.type=="Actor");
   if (!folder) createFolderDebounce({type:'Actor', name: card.parent.name, flags:{world:{cards:card.parent.uuid}}})
   let actor = game.actors.find(a=>a.flags.world?.card==card.uuid);
-  if (!actor) actor = Actor.create({
+  if (!actor) actor = await Actor.create({
     img: card.faces[card.face]?.img || card.faces[0]?.img, 
     name: card.name, 
     type: Object.keys(game.system.model.Actor)[0], 
@@ -134,6 +133,10 @@ Hooks.on('createCard', async (card, options, user)=>{
     },
     flags:{world:{card:card.uuid}}
   })
+  let drawing = canvas.scene.drawings.find(d=>d.text==card.parent.name)
+  if (!drawing) return;
+  let data = {...drawing.object.center, uuid: card.uuid, rotation: Math.toDegrees(canvas.stage.rotation)*-1}
+  window.socket.executeAsGM("createCardToken", data, game.user.id);
 })
 
 Hooks.on('updateCard', async (card, update, options, user)=>{
