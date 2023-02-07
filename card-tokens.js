@@ -8,6 +8,17 @@ var createCardToken = async function(data, userId) {
 }
 
 Hooks.on('canvasReady', (canvas)=>{
+  canvas._onMouseWheel = function(event) {
+    if ( event.altKey) {
+      canvas.stage.rotation = event.delta < 0 ? canvas.stage.rotation + Math.toRadians(event.shiftKey?15:45) : canvas.stage.rotation - Math.toRadians(event.shiftKey?15:45);
+      canvas.hud.align()
+      Hooks.call('canvasPan', canvas, {}) 
+      return;
+    }
+    let dz = ( event.delta < 0 ) ? 1.05 : 0.95;
+    this.pan({scale: dz * canvas.stage.scale.x});
+  }
+
   canvas.hud.align = function() {
     const hud = this.element[0];
     const {x, y} = canvas.primary.getGlobalPosition();
@@ -51,9 +62,9 @@ Hooks.on('dropCanvasData', async (canvas, data)=>{
   if (data.type != "Card") return;
   let card = fromUuidSync(data.uuid);
   data.scene = canvas.scene.id;
-  
+
   Hooks.once('renderDialog', (app, html, dialogOptions)=>{
-    html.find('.dialog-buttons').append($(`<button class="do-not-pass">Do Not Pass</button>`).click( async function(){
+    html.find('.dialog-buttons').append($(`<button class="do-not-pass"><i class="fa-solid fa-caret-down"></i> Do Not Pass</button>`).click( async function(){
       let face = html.find('input[name="down"]').is(':checked')?null:card.face;
       await card.update({face});
       window.socket.executeAsGM("createCardToken", data, game.user.id);
@@ -81,7 +92,7 @@ Hooks.on('renderTokenHUD', (app, html, hudData)=>{
     if (face.img!=app.object.document.texture.src)//flex: 0 0 ${app.object.w}px;
     html.find('.bar2').after($(`<div class="control-icon face" data-face="${card.faces.indexOf(face)}" style="margin:.2em; width:${app.object.w}px; flex: 0 0 ${app.object.w}px;  justify-content: center;" title="${face.name}">
     <img style="padding:0.5em; height: 100%; justify-content: center;" src="${face.img}"></div>`)
-    .click(function(){console.log(Number($(this).data().face)); card.update({face:Number($(this).data().face)}) }))
+    .click(function(){ card.update({face:Number($(this).data().face)}) }))
   }
 });
 
