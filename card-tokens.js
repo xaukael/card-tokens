@@ -17,7 +17,7 @@ Hooks.on('canvasReady', (canvas)=>{
       let degrees = 5;
       if (event.ctrlKey) degrees = 15;
       if (event.shiftKey) degrees = 45;
-      canvas.stage.rotation = event.delta < 0 ? canvas.stage.rotation + Math.toRadians(degrees) : canvas.stage.rotation - Math.toRadians(degrees);
+      canvas.stage.rotation = event.delta < 0 ? (canvas.stage.rotation + Math.toRadians(degrees))%(2*Math.PI) : (canvas.stage.rotation - Math.toRadians(degrees))%(2*Math.PI);
       canvas.hud.align();
       Hooks.call('canvasPan', canvas, {});
       return;
