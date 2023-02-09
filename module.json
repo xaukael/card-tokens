@@ -5,7 +5,7 @@
   "title": "Card Tokens",
   "description": "Drop cards onto the canvas as tokens",
   "authors": [{"name":"Xaukael"}],
-  "version": "0.3.0",
+  "version": "0.4.0",
 	"socket": true,
   "compatibility": {
       "minimum": "10",
@@ -13,25 +13,25 @@
     },
 	"socket": true,
   "scripts": ["card-tokens.js"],
-    "relationships": {
-        "requires": [
-            {
-                "id": "warpgate",
-                "type": "module",
-                "manifest": "https://github.com/trioderegion/warpgate/releases/latest/download/module.json",
-                "compatibility": {
-                    "minimum": "1.12.1",
-                    "verified": "1.15.x",
-                    "maximum": "2"
-                }
-            },
-						{
-                "id": "socketlib",
-                "type": "module",
-                "manifest": "https://raw.githubusercontent.com/manuelVo/foundryvtt-socketlib/master/module.json"
-            }
-        ]
-    },
+  "relationships": {
+      "requires": [
+          {
+              "id": "warpgate",
+              "type": "module",
+              "manifest": "https://github.com/trioderegion/warpgate/releases/latest/download/module.json",
+              "compatibility": {
+                  "minimum": "1.12.1",
+                  "verified": "1.15.x",
+                  "maximum": "2"
+              }
+          },
+					{
+              "id": "socketlib",
+              "type": "module",
+              "manifest": "https://raw.githubusercontent.com/manuelVo/foundryvtt-socketlib/master/module.json"
+          }
+      ]
+  },
   "url": "https://github.com/xaukael/card-tokens/",
   "manifest": "https://github.com/xaukael/dcard-tokens/raw/main/module.json",
   "download": "https://github.com/xaukael/card-tokens/raw/main/card-tokens.zip"

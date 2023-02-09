@@ -32,7 +32,7 @@ Hooks.on('canvasReady', (canvas)=>{
     const scale = canvas.stage.scale.x;
     hud.style.left = `${x}px`;
     hud.style.top = `${y}px`;
-    hud.style.transform = `scale(${scale}) rotate(${Math.ceil(Math.toDegrees(canvas.stage.rotation)/5)*5}deg)`;
+    hud.style.transform = `scale(${scale}) rotate(${Math.round(Math.toDegrees(canvas.stage.rotation)/5)*5}deg)`;
   }
 });
 
