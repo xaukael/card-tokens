@@ -1,6 +1,9 @@
 # card-tokens
 Drag cards to the canvas
 
+0.4.2
+  - changed socket to more unique name to avoid potential for conflicts
+
 0.3.0
 
   - cards will now spawn in the center of a drawing with the text that matches the hand or pile it is played to
