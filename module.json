@@ -5,7 +5,7 @@
   "title": "Card Tokens",
   "description": "Drop cards onto the canvas as tokens",
   "authors": [{"name":"Xaukael"}],
-  "version": "0.4.1",
+  "version": "0.4.2",
 	"socket": true,
   "compatibility": {
       "minimum": "10",
@@ -33,6 +33,6 @@
       ]
   },
   "url": "https://github.com/xaukael/card-tokens/",
-  "manifest": "https://github.com/xaukael/card-tokens/raw/main/module.json",
+  "manifest": "https://github.com/xaukael/dcard-tokens/raw/main/module.json",
   "download": "https://github.com/xaukael/card-tokens/raw/main/card-tokens.zip"
 }

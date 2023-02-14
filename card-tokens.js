@@ -17,7 +17,7 @@ Hooks.on('canvasReady', (canvas)=>{
       let degrees = 5;
       if (event.ctrlKey) degrees = 15;
       if (event.shiftKey) degrees = 45;
-      canvas.stage.rotation = event.delta < 0 ? (canvas.stage.rotation + Math.toRadians(degrees))%(2*Math.PI) : (canvas.stage.rotation - Math.toRadians(degrees))%(2*Math.PI);
+      canvas.stage.rotation = (event.delta < 0 ? (canvas.stage.rotation + Math.toRadians(degrees)) : (canvas.stage.rotation - Math.toRadians(degrees))) % (2*Math.PI);
       canvas.hud.align();
       Hooks.call('canvasPan', canvas, {});
       return;
@@ -50,8 +50,8 @@ Hooks.on('preCreateToken', (token)=>{
 });
 
 Hooks.once("socketlib.ready", () => {
-	window.socket = socketlib.registerModule("card-tokens");
-	window.socket.register("createCardToken", createCardToken);
+	window.socketForCardTokens = socketlib.registerModule("card-tokens");
+	window.socketForCardTokens.register("createCardToken", createCardToken);
 });
 
 Hooks.on('dropCanvasData', async (canvas, data)=>{
@@ -74,7 +74,7 @@ Hooks.on('dropCanvasData', async (canvas, data)=>{
     html.find('.dialog-buttons').append($(`<button class="do-not-pass"><i class="fa-solid fa-caret-down"></i> Do Not Pass</button>`).click( async function(){
       let face = html.find('input[name="down"]').is(':checked')?null:card.face;
       await card.update({face});
-      window.socket.executeAsGM("createCardToken", data, game.user.id);
+      window.socketForCardTokens.executeAsGM("createCardToken", data, game.user.id);
       app.close();
     }));
   });
@@ -82,7 +82,7 @@ Hooks.on('dropCanvasData', async (canvas, data)=>{
   let newCards = await card.parent.playDialog(card);
   if (!newCards?.length) return;
   data.uuid = newCards[0].uuid;
-  return window.socket.executeAsGM("createCardToken", data, game.user.id);
+  return window.socketForCardTokens.executeAsGM("createCardToken", data, game.user.id);
 });
 
 Hooks.on('renderTokenHUD', (app, html, hudData)=>{
@@ -136,7 +136,7 @@ Hooks.on('createCard', async (card, options, user)=>{
   let drawing = canvas.scene.drawings.find(d=>d.text==card.parent.name)
   if (!drawing) return;
   let data = {...drawing.object.center, uuid: card.uuid, rotation: Math.toDegrees(canvas.stage.rotation)*-1}
-  window.socket.executeAsGM("createCardToken", data, game.user.id);
+  window.socketForCardTokens.executeAsGM("createCardToken", data, game.user.id);
 })
 
 Hooks.on('updateCard', async (card, update, options, user)=>{
