@@ -1,4 +1,4 @@
-# card-tokens
+# Card Tokens
 Drag cards to the canvas
 
 0.4.3
