@@ -68,21 +68,20 @@ Hooks.on('dropCanvasData', async (canvas, data)=>{
   data.rotation = Math.toDegrees(canvas.stage.rotation)*-1;
   if (data.type != "Card") return;
   let card = fromUuidSync(data.uuid);
-  //data.scene = canvas.scene.id;
-  console.log(data)
   Hooks.once('renderDialog', (app, html, dialogOptions)=>{
     html.find('.dialog-buttons').append($(`<button class="do-not-pass"><i class="fa-solid fa-caret-down"></i> Do Not Pass</button>`).click( async function(){
       let face = html.find('input[name="down"]').is(':checked')?null:card.face;
       await card.update({face});
       window.socketForCardTokens.executeAsGM("createCardToken", data, game.user.id);
       app.close();
-    }));
+    }));  
   });
   
   let newCards = await card.parent.playDialog(card);
-  if (!newCards?.length) return;
+  if (!newCards?.length) return ;
   data.uuid = newCards[0].uuid;
-  return window.socketForCardTokens.executeAsGM("createCardToken", data, game.user.id);
+  let drawing = canvas.scene.drawings.find(d=>d.text==newCards[0].parent.name)
+  if (!drawing) return window.socketForCardTokens.executeAsGM("createCardToken", data, game.user.id)
 });
 
 Hooks.on('renderTokenHUD', (app, html, hudData)=>{
