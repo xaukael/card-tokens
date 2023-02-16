@@ -1,6 +1,10 @@
 # card-tokens
 Drag cards to the canvas
 
+0.4.3
+
+  - fixed double card on dragging to canvas when drawing exists.
+
 0.4.2
   - changed socket to more unique name to avoid potential for conflicts
 
