@@ -135,7 +135,7 @@ Hooks.on('createCard', async (card, options, user)=>{
   if (!actor) actor = await Actor.create({
     img: card.faces[card.face]?.img || card.faces[0]?.img, 
     name: card.name, 
-    type: Object.keys(game.system.model.Actor)[0], 
+    type: Object.entries(game.system.model.Actor).filter((k,v)=>v).map(([k,v])=>k)[0], 
     ownership: card.parent.ownership,
     folder: folder?.id || null,
     token: {
