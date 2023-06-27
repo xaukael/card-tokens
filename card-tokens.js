@@ -123,7 +123,8 @@ Hooks.on('renderTokenHUD', (app, html, hudData)=>{
 Hooks.on('deleteActor', async (actor)=>{
   if (!warpgate.util.isFirstGM()) return;
   if (!actor.flags.world?.card) return;
-  await Promise.all(game.scenes.map(s=>{return s.deleteEmbeddedDocuments("Token", s.tokens.filter(i=>i.actor?.id==actor.id).map(t=>t._id))}))
+  //console.log(game.scenes.map(s=>{return s.tokens.filter(i=>i.actorId==actor.id)}))
+  game.scenes.map(s=>{return s.deleteEmbeddedDocuments("Token", s.tokens.filter(i=>i.actorId==actor.id).map(t=>t.id))})
 });
 
 Hooks.on('createCard', async (card, options, user)=>{
@@ -168,6 +169,7 @@ Hooks.on('updateCard', async (card, update, options, user)=>{
 Hooks.on('deleteCard', async (card, options, user)=>{
   if (!warpgate.util.isFirstGM()) return;
   await Actor.deleteDocuments(game.actors.filter(a=>a.flags.world?.card==card.uuid).map(c=>c._id))
+  
   let folder = game.folders.find(f=>f.name==card.parent.name&&f.type=="Actor");
   let actors = game.actors.filter(a=>a.folder?.id==folder?.id);
   if (actors.length) return;
