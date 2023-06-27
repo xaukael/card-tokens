@@ -15,6 +15,9 @@ Because card games are often played from different perpectives, this module also
 
 _depends on the warpgate module to spawn the cards and a GM must be logged in_
 
+0.4.7
+  - fix for SWADE actor model
+    
 0.4.3
   - fixed double card on dragging to canvas when drawing exists.
 
