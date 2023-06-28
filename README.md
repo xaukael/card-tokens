@@ -15,26 +15,27 @@ Because card games are often played from different perpectives, this module also
 
 _depends on the warpgate module to spawn the cards and a GM must be logged in_
 
-0.4.7
-  - fix for SWADE actor model
-    
-0.4.3
-  - fixed double card on dragging to canvas when drawing exists.
+Sure! Here's an instruction in English:
 
-0.4.2
-  - changed socket to more unique name to avoid potential for conflicts
+# Modifying Cards on Canvas using World Scripts
+You can use world scripts to modify cards when they are placed on the canvas. To do this, follow the instructions provided in the following link: [https://foundryvtt.wiki/en/basics/world-scripts](https://foundryvtt.wiki/en/basics/world-scripts).
 
-0.3.0
+Below is a functional script snippet for the Card Tokens module:
 
-  - cards will now spawn in the center of a drawing with the text that matches the hand or pile it is played to
-  - slight modification to canvas rotating. Alt = 5deg; Ctrl = 15deg; Shift = 45deg; to match token rotating
-  - fixed card token spawn rotation to be vertical from the playing user's perspective
+```
+Hooks.on('createToken', (cardToken) => {
 
-0.2.0
+  // 
+  if (!cardToken.actor.flags.world?.card) return;
+  cardToken.updateSource({
+    sight: {
+      enabled: false // disable vision
+    },
+    displayName: 0
+  });
 
-  - reformat hud to position card face change in center of the token
-  - alt+(shift)-wheel rotates the canvas
+});
+```
 
-0.1.0
-
-  - initial package
+# Changes
+You can see changes at [CHANGELOG](CHANGELOG.md).
