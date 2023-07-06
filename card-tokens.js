@@ -3,11 +3,12 @@ var createCardToken = async function(data, userId) {
   let src = data.src;
   let actor = game.actors.find(a=>a.flags.world?.card==card.uuid);
   let drawing = canvas.scene.drawings.find(d=>d.text==card.parent.name);
-  if (actor && !drawing) return warpgate.spawnAt(data, await actor.getTokenDocument(), {token:{texture:{src}, rotation:data.rotation}});
+  if (actor && !drawing) return warpgate.spawnAt(data, await actor.getTokenDocument(), {token:{texture:{src}, rotation:data.rotation+actor.prototypeToken.texture.rotation}});
   if (drawing) data = {...data, ...drawing.object.center}
   Hooks.once('createActor', async (actor)=>{ 
-    warpgate.spawnAt(data, await actor.getTokenDocument(), {token:{texture:{src}, rotation:data.rotation}}, {}, {collision:!!drawing}) 
+    warpgate.spawnAt(data, await actor.getTokenDocument(), {token:{texture:{src}, rotation:data.rotation+actor.prototypeToken.texture.rotation}}, {}, {collision:!!drawing}) 
   })
+
 }
 
 Hooks.on('canvasReady', (canvas)=>{
@@ -67,6 +68,12 @@ Hooks.on('preCreateToken', (token)=>{
   return false;
 });
 
+Hooks.on('preUpdateToken',  (token, update, options) =>{
+  if (!game.settings.get('card-tokens', 'noCardMoveAnimation')) return;
+  if (!token.actor.flags.world?.card) return;
+  options.animate = false;
+});
+
 Hooks.once("socketlib.ready", () => {
 	window.socketForCardTokens = socketlib.registerModule("card-tokens");
 	window.socketForCardTokens.register("createCardToken", createCardToken);
@@ -123,7 +130,6 @@ Hooks.on('renderTokenHUD', (app, html, hudData)=>{
 Hooks.on('deleteActor', async (actor)=>{
   if (!warpgate.util.isFirstGM()) return;
   if (!actor.flags.world?.card) return;
-  //console.log(game.scenes.map(s=>{return s.tokens.filter(i=>i.actorId==actor.id)}))
   game.scenes.map(s=>{return s.deleteEmbeddedDocuments("Token", s.tokens.filter(i=>i.actorId==actor.id).map(t=>t.id))})
 });
 
@@ -141,10 +147,10 @@ Hooks.on('createCard', async (card, options, user)=>{
     folder: folder?.id || null,
     token: {
       texture: {src:card.face!=null?card.faces[card.face].img:card.faces[0].img}, 
-      height: card.height, 
-      width: card.width,
-      rotation: canvas.stage.rotation,
-      displayName: CONST.TOKEN_DISPLAY_MODES.OWNER_HOVER,
+      height: card.height || game.settings.get("card-tokens", "height"), 
+      width: card.width || game.settings.get("card-tokens", "width"),
+      texture:{rotation: card.rotation},
+      displayName: game.settings.get("card-tokens", "displayName"),
       displayBars: CONST.TOKEN_DISPLAY_MODES.NONE,
       bar1: {attribute: null},
       bar2: {attribute: null}
@@ -153,7 +159,8 @@ Hooks.on('createCard', async (card, options, user)=>{
   })
   let drawing = canvas.scene.drawings.find(d=>d.text==card.parent.name)
   if (!drawing) return;
-  let data = {...drawing.object.center, uuid: card.uuid, rotation: Math.toDegrees(canvas.stage.rotation)*-1}
+  let data = {...drawing.object.center, uuid: card.uuid, rotation: (Math.toDegrees(canvas.stage.rotation)*-1)+card.rotation}
+  console.log(data)
   window.socketForCardTokens.executeAsGM("createCardToken", data, game.user.id);
 })
 
@@ -193,3 +200,57 @@ Hooks.on('renderActorSheet', (app, html)=>{
   html.css({display:'none'});
   html.ready(function(){app.close()});
 })
+
+Hooks.once("init", async () => {
+  game.settings.register('card-tokens', 'width', {
+    name: `Default Width`,
+    hint: `Width for cards that do not have one set`,
+    scope: "world",
+    config: true,
+    type: Number,
+    default: 2,
+    onChange: value => { }
+  });
+  game.settings.register('card-tokens', 'height', {
+    name: `Default Height`,
+    hint: `Height for cards that do not have one set`,
+    scope: "world",
+    config: true,
+    type: Number,
+    default: 3,
+    onChange: value => { }
+  });
+  
+  game.settings.register('card-tokens', 'displayName', {
+    name: `Token Name Display`,
+    hint: `Owner Hover Suggested`,
+    scope: "world",
+    type: Number,
+    choices: {
+  0: "NONE",
+  10:"CONTROL",
+  20:"OWNER_HOVER",
+  30:"HOVER",
+  40:"OWNER",
+  50:"ALWAYS"
+},
+    default: 20,
+    config: true,
+    onChange: async value => { 
+      let updates = game.actors.filter(a=>a.flags.world?.card).map(actor => ({ _id : actor.id, "prototypeToken.displayName" : value}));
+      await Actor.updateDocuments(updates);
+      for (let scene of game.scenes)
+        await scene.updateEmbeddedDocuments("Token", scene.tokens.filter(t=>t.actor?.flags.world?.card).map(t=>{return {_id:t.id, displayName: value }}))
+    }
+  });
+  
+  game.settings.register('card-tokens', 'noCardMoveAnimation', {
+    name: `No Card Move Animation`,
+    hint: `prevent cards from animating when moving`,
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    onChange: value => { }
+  });
+});
