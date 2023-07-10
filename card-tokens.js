@@ -3,8 +3,8 @@ var createCardToken = async function(data, userId) {
   let src = data.src;
   let actor = game.actors.find(a=>a.flags.world?.card==card.uuid);
   let drawing = canvas.scene.drawings.find(d=>d.text==card.parent.name);
-  if (actor && !drawing) return warpgate.spawnAt(data, await actor.getTokenDocument(), {token:{texture:{src}, rotation:data.rotation+actor.prototypeToken.texture.rotation}});
   if (drawing) data = {...data, ...drawing.object.center}
+  if (actor) return warpgate.spawnAt(data, await actor.getTokenDocument(), {token:{texture:{src}, rotation:data.rotation+actor.prototypeToken.texture.rotation}});
   Hooks.once('createActor', async (actor)=>{ 
     warpgate.spawnAt(data, await actor.getTokenDocument(), {token:{texture:{src}, rotation:data.rotation+actor.prototypeToken.texture.rotation}}, {}, {collision:!!drawing}) 
   })
@@ -192,13 +192,15 @@ Hooks.on('createFolder', (folder)=>{
   Actor.updateDocuments(game.actors.filter(a=>a.flags.world?.card?.includes(folder.flags.world?.cards) && !a.folder).map(a=>{return {_id:a.id, folder:folder.id} }))
 })
 
-Hooks.on('renderActorSheet', (app, html)=>{
+Hooks.on('renderActorSheet', (app, html, data)=>{
   let actor = app.object;
   if (!actor.flags.world?.card) return;
   let card = fromUuidSync(actor.flags.world?.card);
-  card.parent.playDialog(card);
-  html.css({display:'none'});
+  
   html.ready(function(){app.close()});
+  html.closest('.app').remove()//.css({display:'none'});
+  card.parent.playDialog(card);
+  return false;
 })
 
 Hooks.once("init", async () => {
