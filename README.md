@@ -15,6 +15,9 @@ Because card games are often played from different perpectives, this module also
 
 _depends on the warpgate module to spawn the cards and a GM must be logged in_
 
+0.5.1
+  - fixed cards going to the wrong drawing
+    
 0.5.0
   - added option for disabling animation for card tokens moving
     
