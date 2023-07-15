@@ -133,6 +133,16 @@ Hooks.on('deleteActor', async (actor)=>{
   game.scenes.map(s=>{return s.deleteEmbeddedDocuments("Token", s.tokens.filter(i=>i.actorId==actor.id).map(t=>t.id))})
 });
 
+Hooks.on('preCreateActor', async (actor)=>{
+  if (game.system.id != "dnd5e") return;
+  if (!actor.flags.world?.card) return;
+  let card = await fromUuid(actor.flags.world?.card)
+  actor.updateSource({prototypeToken: {
+      height: card.height || game.settings.get("card-tokens", "height"), 
+      width: card.width || game.settings.get("card-tokens", "width")
+  }})
+});
+
 Hooks.on('createCard', async (card, options, user)=>{
   if (!warpgate.util.isFirstGM()) return;
   if (card.parent.type=="deck") return;
@@ -145,8 +155,9 @@ Hooks.on('createCard', async (card, options, user)=>{
     type: Object.entries(game.system.model.Actor).filter((k,v)=>v).map(([k,v])=>k)[0], 
     ownership: card.parent.ownership,
     folder: folder?.id || null,
-    token: {
+    prototypeToken: {
       texture: {src:card.face!=null?card.faces[card.face].img:card.faces[0].img}, 
+      actorLink: true,
       height: card.height || game.settings.get("card-tokens", "height"), 
       width: card.width || game.settings.get("card-tokens", "width"),
       texture:{rotation: card.rotation},
