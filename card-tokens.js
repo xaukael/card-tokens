@@ -61,10 +61,10 @@ Hooks.on('preCreateToken', (token)=>{
   if (!scenes.length) {
     let card = fromUuidSync(token.actor.flags.world?.card);
     let src = card.face!=null?card.faces[card.face].img:card.back.img;
-    token.data.update({texture:{src}});
+    token.updateSource({texture:{src}});
     return true;
   }
-  ui.notifications.warn(`Card already on scenes: ${scenes.map(s=>s.name).join()}`);
+  ui.notifications.warn(`Card already on scene: ${scenes.map(s=>s.name).join()}`);
   return false;
 });
 
