@@ -22,9 +22,10 @@ Hooks.on('canvasReady', (canvas)=>{
       Hooks.call('canvasPan', canvas, {});
       return;
     }
+    
     let dz = ( event.delta < 0 ) ? 1.05 : 0.95;
-    //this.pan({scale: dz * canvas.stage.scale.x});
-
+    this.pan({scale: dz * canvas.stage.scale.x});
+    return
     const scale = dz * canvas.stage.scale.x
     const d = canvas.dimensions
     const max = CONFIG.Canvas.maxZoom
