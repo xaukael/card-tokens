@@ -5,7 +5,7 @@
   "title": "Card Tokens",
   "description": "Drop cards onto the canvas as tokens",
   "authors": [{"name":"Xaukael"}],
-  "version": "0.5.4",
+  "version": "1.0.1",
 	"socket": true,
   "compatibility": {
       "minimum": "10",
@@ -14,17 +14,8 @@
 	"socket": true,
   "scripts": ["card-tokens.js"],
   "relationships": {
+      
       "requires": [
-          {
-              "id": "warpgate",
-              "type": "module",
-              "manifest": "https://github.com/trioderegion/warpgate/releases/latest/download/module.json",
-              "compatibility": {
-                  "minimum": "1.12.1",
-                  "verified": "1.15.x",
-                  "maximum": "2"
-              }
-          },
 					{
               "id": "socketlib",
               "type": "module",
