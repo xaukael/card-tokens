@@ -1,7 +1,7 @@
 # Card Tokens
 Drag cards to the canvas from hands or piles. On dropping the card on the canvas, you will be asked where and how to play the card withe the standard dialog.
 When the card moves to that pile/hand a few things will happen:
-1. an actor folder will be created if one does not exist already
+1. an actor folder for the hand or pile will be created if one does not exist already
 2. an actor representing that card will be created in that folder
 3. a token will be added to the canvas with the face showing based on how the card was played
 
