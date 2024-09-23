@@ -5,7 +5,7 @@
   "title": "Card Tokens",
   "description": "Drop cards onto the canvas as tokens",
   "authors": [{"name":"Xaukael"}],
-  "version": "1.0.1",
+  "version": "1.0.2",
 	"socket": true,
   "compatibility": {
       "minimum": "10",

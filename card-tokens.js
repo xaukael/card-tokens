@@ -37,16 +37,16 @@ var flipCardToken = async function (uuid, src) {
   let token = canvas.scene.tokens.find(i=>i.actor?.id==actor.id).object
   if (!token) return;
   if(!PIXI.Cache.has(src)) await loadTexture(src);
-  const scale = token.mesh.scale.x;
+  const scale = token.mesh.scale[game.settings.get('card-tokens', 'flipDirection')];
   await CanvasAnimation.animate([{
     parent: token.mesh.scale,
-    attribute: "x",
+    attribute: game.settings.get('card-tokens', 'flipDirection'),
     to: 0,
   }], {duration:250});
   token.mesh.texture = PIXI.Cache.get(src);
   await CanvasAnimation.animate([{
     parent: token.mesh.scale,
-    attribute: "x",
+    attribute: game.settings.get('card-tokens', 'flipDirection'),
     to: scale,
   }], {duration:250});
   return true
@@ -166,6 +166,7 @@ Hooks.on('renderTokenHUD', (app, html, hudData)=>{
   if (!actor.flags.world?.card) return;
   let card = fromUuidSync(actor.flags.world?.card);
   if (!card) return;
+  /*
   if (card.back.img!=app.object.document.texture.src)
   html.find('.bar2').after($(`<div class="control-icon face" style="margin:auto ; width:${app.object.w/2}px; flex: 0 0 ${app.object.w/2}px;  justify-content: center;" title="back">
   <img style="padding:0.5em; height: 100%;" src="${card.back.img}"> </div>`)
@@ -183,8 +184,14 @@ Hooks.on('renderTokenHUD', (app, html, hudData)=>{
       card.update({face:Number($(this).data().face)
                   })}))
   }
-  html.find('.col.left > div.elevation, .col.left > div[data-action="config"], .col.right > div').remove()
-  html.find('.col.middle > .attribute').remove()
+  */
+  html.find('.col.left > div.elevation, .col.left > div[data-action="config"], .col.right > div, .col.middle > .attribute').remove()
+  html.find('.col.right')
+    .append($(`<div class="control-icon" data-action="next-face" data-tooltip="Next Face"><i class="fa-solid fa-caret-up"></i></div>`)
+      .click(function(){ card.update({face: card.face === null ? 0 : card.face+1}); }))
+  html.find('.col.right')
+    .append($(`<div class="control-icon" data-action="previous-face" data-tooltip="Previous Face"><i class="fa-solid fa-caret-down"></i></div>`)
+      .click(function(){ card.update({face: card.face === 0 ? null : card.face-1}); }))
 });
 
 Hooks.on('deleteActor', async (actor)=>{
@@ -213,11 +220,12 @@ Hooks.on('createCard', async (card, options, user)=>{
   let type = Object.keys(model['Actor']).filter(t=>t!="base")[0]
   if (!actor) actor = await Actor.create({
     img: card.faces[card.face]?.img || card.faces[0]?.img, 
-    name: card.name, 
+    name: card.uuid, 
     type, 
     ownership: card.parent.ownership,
     folder: folder?.id || null,
     prototypeToken: {
+      name:card.name,
       texture: {src:card.face!=null?card.faces[card.face].img:card.faces[0].img}, 
       actorLink: true,
       height: card.height || game.settings.get("card-tokens", "height"), 
@@ -244,7 +252,7 @@ Hooks.on('updateCard', async (card, update, options, user)=>{
   let src = card.faces[update.face]?.img || card.back.img;
   window.socketForCardTokens.executeForEveryone("flipCardToken", card.uuid, src);
   await new Promise(r=>setTimeout(r,500));
-  await Promise.all(game.scenes.map(s=> { return  s.updateEmbeddedDocuments("Token", s.tokens?.filter(i=>i.actor?.id==actor.id).map(t=>{return {_id:t._id, texture:{src}}}), {animate: false} )}))
+  await Promise.all(game.scenes.map(s=> { return  s.updateEmbeddedDocuments("Token", s.tokens?.filter(i=>i.actor?.id==actor.id).map(t=>{return {_id:t._id, texture:{src}, name: card.name}}), {animate: false} )}))
   
 })
 
@@ -303,6 +311,19 @@ Hooks.once("init", async () => {
     type: Number,
     default: 3,
     onChange: value => { }
+  });
+  game.settings.register('card-tokens', 'flipDirection', {
+    name: `Flip Animation Direction`,
+    hint: `Flip horizontally (x) or vetically (y)`,
+    scope: "world",
+    type: String,
+    choices: {
+      "x": "horizontally",
+      "y": "vertically"
+    },
+    default: "y",
+    config: true,
+    onChange: async value => {  }
   });
   
   game.settings.register('card-tokens', 'displayName', {
