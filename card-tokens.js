@@ -88,7 +88,7 @@ Hooks.on('canvasReady', (canvas)=>{
   }
 
   canvas.hud.align = function() {
-    const hud = this.element[0];
+    const hud = this.element[0] ?? this.element;
     const {x, y} = canvas.primary.getGlobalPosition();
     const scale = canvas.stage.scale.x;
     hud.style.left = `${x}px`;

@@ -5,11 +5,11 @@
   "title": "Card Tokens",
   "description": "Drop cards onto the canvas as tokens",
   "authors": [{"name":"Xaukael"}],
-  "version": "1.0.2",
+  "version": "1.0.3",
 	"socket": true,
   "compatibility": {
       "minimum": "10",
-      "verified": "12"
+      "verified": "13"
     },
 	"socket": true,
   "scripts": ["card-tokens.js"],
